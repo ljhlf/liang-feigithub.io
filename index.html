@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <!-- 优化4: SEO 优化 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设计作品集 | [你的名字] - UI/UX设计师 & 创意总监</title>
+    <meta name="description" content="专业UI/UX设计师[你的名字]的作品集，展示品牌设计、移动应用和网页设计项目。5年设计经验，致力于创造有影响力的视觉体验。">
+    <meta name="keywords" content="UI设计,UX设计,品牌设计,网页设计,移动应用设计,作品集,设计师,用户体验">
+    <meta name="author" content="[你的名字]">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yourportfolio.com/">
+    <meta property="og:title" content="设计作品集 | [你的名字]">
+    <meta property="og:description" content="专业UI/UX设计师的作品集，展示创意设计解决方案。">
+    <meta property="og:image" content="https://yourportfolio.com/images/og-image.jpg">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="设计作品集 | [你的名字]">
+    <meta name="twitter:description" content="专业UI/UX设计师的作品集，展示创意设计解决方案。">
+    
+    <!-- 结构化数据 Schema.org -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "[你的名字]",
+      "jobTitle": "UI/UX设计师",
+      "url": "https://yourportfolio.com",
+      "sameAs": [
+        "https://linkedin.com/in/yourname",
+        "https://behance.net/yourname",
+        "https://dribbble.com/yourname"
+      ],
+      "worksFor": {
+        "@type": "Organization",
+        "name": "自由职业设计师"
+      },
+      "description": "专业UI/UX设计师，专注于创造有意义的数字体验"
+    }
+    </script>
+    
+    <!-- 图标 -->
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+    
+    <!-- 字体和图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- 优化3: AOS 动画库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    
+    <!-- 主样式 -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header>
+        <div class="container nav-container">
+            <a href="index.html" class="logo">设计<span>集</span></a>
+            <div class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#home" class="active">首页</a></li>
+                <li><a href="#portfolio">作品集</a></li>
+                <li><a href="#about">关于我</a></li>
+                <li><a href="#contact">联系</a></li>
+                <li><a href="project-details.html" class="btn-outline">项目详情示例</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- 首页英雄区域 -->
+    <section class="hero" id="home" data-aos="fade-up" data-aos-duration="1000">
+        <div class="container">
+            <div class="hero-content">
+                <h1 data-aos="fade-up" data-aos-delay="200">创造有影响力的<span class="highlight">视觉体验</span></h1>
+                <p data-aos="fade-up" data-aos-delay="400">我是[你的名字]，一名专注于UI/UX设计、品牌视觉和交互设计的创意设计师。我相信好的设计不仅仅是美观，更是解决问题、传达价值和提升用户体验的桥梁。</p>
+                <div class="hero-btns" data-aos="fade-up" data-aos-delay="600">
+                    <a href="#portfolio" class="btn">查看作品</a>
+                    <a href="#contact" class="btn btn-outline">联系我</a>
+                </div>
+            </div>
+            <div class="hero-image" data-aos="fade-left" data-aos-delay="800">
+                <!-- 优化2: 使用真实图片 -->
+                <div class="image-slider">
+                    <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1561070791-2526d30994b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')"></div>
+                    <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1558655146-364adaf1fcc9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')"></div>
+                    <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')"></div>
+                </div>
+                <div class="slider-controls">
+                    <button class="slider-btn prev"><i class="fas fa-chevron-left"></i></button>
+                    <button class="slider-btn next"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 作品集区域 -->
+    <section id="portfolio">
+        <div class="container">
+            <div class="section-title">
+                <h2 data-aos="fade-up">精选作品</h2>
+                <p data-aos="fade-up" data-aos-delay="200">探索我最近的设计项目，每个项目都包含完整的设计过程和思考</p>
+            </div>
+            <div class="portfolio-filter" data-aos="fade-up" data-aos-delay="300">
+                <button class="filter-btn active" data-filter="all">全部</button>
+                <button class="filter-btn" data-filter="ui-ux">UI/UX设计</button>
+                <button class="filter-btn" data-filter="branding">品牌设计</button>
+                <button class="filter-btn" data-filter="web">网页设计</button>
+                <button class="filter-btn" data-filter="mobile">移动应用</button>
+            </div>
+            <div class="portfolio-grid">
+                <!-- 项目 1 - 优化1: 添加详细链接 -->
+                <div class="portfolio-item" data-category="ui-ux" data-aos="fade-up" data-aos-delay="400">
+                    <a href="project-details.html?id=1" class="portfolio-link">
+                        <div class="portfolio-img">
+                            <!-- 优化2: 使用真实图片 -->
+                            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="金融科技应用设计" loading="lazy">
+                            <div class="portfolio-overlay">
+                                <span class="view-btn">查看案例研究 <i class="fas fa-arrow-right"></i></span>
+                            </div>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>金融科技移动应用</h3>
+                            <p>为一家初创金融科技公司设计的用户友好的移动银行应用，专注于简化交易流程和提升用户体验。</p>
+                            <div class="portfolio-meta">
+                                <span class="client">FinTech StartUp</span>
+                                <span class="year">2023</span>
+                            </div>
+                            <div class="portfolio-tags">
+                                <span class="tag">UI设计</span>
+                                <span class="tag">用户体验</span>
+                                <span class="tag">移动端</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- 项目 2 -->
+                <div class="portfolio-item" data-category="branding" data-aos="fade-up" data-aos-delay="500">
+                    <a href="project-details.html?id=2" class="portfolio-link">
+                        <div class="portfolio-img">
+                            <img src="https://images.unsplash.com/photo-1545235617-9465d2a55698?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="有机食品品牌设计" loading="lazy">
+                            <div class="portfolio-overlay">
+                                <span class="view-btn">查看案例研究 <i class="fas fa-arrow-right"></i></span>
+                            </div>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>有机食品品牌视觉识别</h3>
+                            <p>为一家有机食品公司设计的完整品牌系统，包括Logo、包装、营销材料和品牌指南。</p>
+                            <div class="portfolio-meta">
+                                <span class="client">GreenNature Organics</span>
+                                <span class="year">2023</span>
+                            </div>
+                            <div class="portfolio-tags">
+                                <span class="tag">品牌设计</span>
+                                <span class="tag">包装设计</span>
+                                <span class="tag">视觉识别</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- 项目 3 -->
+                <div class="portfolio-item" data-category="web" data-aos="fade-up" data-aos-delay="600">
+                    <a href="project-details.html?id=3" class="portfolio-link">
+                        <div class="portfolio-img">
+                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="时尚电商网站设计" loading="lazy">
+                            <div class="portfolio-overlay">
+                                <span class="view-btn">查看案例研究 <i class="fas fa-arrow-right"></i></span>
+                            </div>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>时尚电商平台设计</h3>
+                            <p>高端时尚品牌的响应式电商网站设计，注重视觉展示和流畅的购物体验。</p>
+                            <div class="portfolio-meta">
+                                <span class="client">Luxe Fashion Co.</span>
+                                <span class="year">2023</span>
+                            </div>
+                            <div class="portfolio-tags">
+                                <span class="tag">网页设计</span>
+                                <span class="tag">电商</span>
+                                <span class="tag">响应式</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- 项目 4 -->
+                <div class="portfolio-item" data-category="mobile" data-aos="fade-up" data-aos-delay="700">
+                    <a href="project-details.html?id=4" class="portfolio-link">
+                        <div class="portfolio-img">
+                            <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="健身应用设计" loading="lazy">
+                            <div class="portfolio-overlay">
+                                <span class="view-btn">查看案例研究 <i class="fas fa-arrow-right"></i></span>
+                            </div>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>健身追踪应用</h3>
+                            <p>一款综合性健身追踪应用，提供个性化训练计划、进度追踪和社交功能。</p>
+                            <div class="portfolio-meta">
+                                <span class="client">FitTrack Pro</span>
+                                <span class="year">2023</span>
+                            </div>
+                            <div class="portfolio-tags">
+                                <span class="tag">移动应用</span>
+                                <span class="tag">交互设计</span>
+                                <span class="tag">健康科技</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- 项目 5 -->
+                <div class="portfolio-item" data-category="ui-ux" data-aos="fade-up" data-aos-delay="800">
+                    <a href="project-details.html?id=5" class="portfolio-link">
+                        <div class="portfolio-img">
+                            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="数据仪表板设计" loading="lazy">
+                            <div class="portfolio-overlay">
+                                <span class="view-btn">查看案例研究 <i class="fas fa-arrow-right"></i></span>
+                            </div>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>数据分析仪表板</h3>
+                            <p>为企业客户设计的数据可视化仪表板，将复杂数据转化为直观的视觉界面。</p>
+                            <div class="portfolio-meta">
+                                <span class="client">DataCorp Analytics</span>
+                                <span class="year">2023</span>
+                            </div>
+                            <div class="portfolio-tags">
+                                <span class="tag">数据可视化</span>
+                                <span class="tag">UI设计</span>
+                                <span class="tag">B2B</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- 项目 6 -->
+                <div class="portfolio-item" data-category="branding" data-aos="fade-up" data-aos-delay="900">
+                    <a href="project-details.html?id=6" class="portfolio-link">
+                        <div class="portfolio-img">
+                            <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="咖啡店品牌设计" loading="lazy">
+                            <div class="portfolio-overlay">
+                                <span class="view-btn">查看案例研究 <i class="fas fa-arrow-right"></i></span>
+                            </div>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>精品咖啡店品牌设计</h3>
+                            <p>为一家本地精品咖啡店设计的完整品牌系统，包括Logo、店内物料和数字媒体资产。</p>
+                            <div class="portfolio-meta">
+                                <span class="client">Brew & Co. Cafe</span>
+                                <span class="year">2023</span>
+                            </div>
+                            <div class="portfolio-tags">
+                                <span class="tag">品牌设计</span>
+                                <span class="tag">餐饮业</span>
+                                <span class="tag">本地品牌</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 统计数据 -->
+    <section class="stats" data-aos="fade-up">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="200">
+                    <div class="stat-number" data-count="45">0</div>
+                    <div class="stat-label">完成项目</div>
+                </div>
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="300">
+                    <div class="stat-number" data-count="32">0</div>
+                    <div class="stat-label">满意客户</div>
+                </div>
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="400">
+                    <div class="stat-number" data-count="5">0</div>
+                    <div class="stat-label">设计奖项</div>
+                </div>
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="500">
+                    <div class="stat-number" data-count="1500">0</div>
+                    <div class="stat-label">设计工时</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 关于我区域 -->
+    <section id="about">
+        <div class="container">
+            <div class="section-title">
+                <h2 data-aos="fade-up">关于我</h2>
+                <p data-aos="fade-up" data-aos-delay="200">用设计连接人与技术</p>
+            </div>
+            <div class="about-content">
+                <div class="about-img" data-aos="fade-right" data-aos-delay="300">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="设计师头像" loading="lazy">
+                </div>
+                <div class="about-text" data-aos="fade-left" data-aos-delay="400">
+                    <h3>用设计连接人与技术</h3>
+                    <p>我是一名有5年经验的专业设计师，专注于创造有意义、有影响力且用户友好的数字体验。我的设计理念植根于对用户需求的深入理解和技术可能性的不断探索。</p>
+                    <p>我曾在多家初创公司和设计机构工作，参与过从概念到落地的完整设计流程。我擅长将复杂问题转化为直观、优雅的解决方案，并通过细致的视觉设计提升产品的整体体验。</p>
+                    
+                    <div class="skills">
+                        <div class="skill-item">
+                            <div class="skill-info">
+                                <span>UI/UX 设计</span>
+                                <span>95%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" data-width="95"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="skill-item">
+                            <div class="skill-info">
+                                <span>品牌设计</span>
+                                <span>90%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" data-width="90"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="skill-item">
+                            <div class="skill-info">
+                                <span>交互设计</span>
+                                <span>85%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" data-width="85"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="skill-item">
+                            <div class="skill-info">
+                                <span>设计系统</span>
+                                <span>80%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" data-width="80"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 设计工具 -->
+                    <div class="design-tools" data-aos="fade-up" data-aos-delay="500">
+                        <h4>设计工具</h4>
+                        <div class="tools-grid">
+                            <div class="tool-item">
+                                <i class="fab fa-figma"></i>
+                                <span>Figma</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fab fa-sketch"></i>
+                                <span>Sketch</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fab fa-adobe"></i>
+                                <span>Adobe CC</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fas fa-cube"></i>
+                                <span>Blender</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fab fa-invision"></i>
+                                <span>InVision</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 联系区域 -->
+    <section id="contact">
+        <div class="container">
+            <div class="section-title">
+                <h2 data-aos="fade-up">联系我</h2>
+                <p data-aos="fade-up" data-aos-delay="200">让我们共同创造</p>
+            </div>
+            <div class="contact-container">
+                <div class="contact-info" data-aos="fade-right" data-aos-delay="300">
+                    <h3>让我们共同创造</h3>
+                    <p>如果您有项目需要讨论，或者只是想聊聊设计，请随时联系我。我期待与您合作，将想法变为现实。</p>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div>
+                            <h4>邮箱</h4>
+                            <p>hello@yourname.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div>
+                            <h4>电话</h4>
+                            <p>+86 138 0000 0000</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div>
+                            <h4>地址</h4>
+                            <p>中国，上海</p>
+                        </div>
+                    </div>
+                    
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-behance"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-dribbble"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div class="contact-form" data-aos="fade-left" data-aos-delay="400">
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <input type="text" placeholder="您的姓名" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" placeholder="您的邮箱" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" placeholder="主题" required>
+                        </div>
+                        <div class="form-group">
+                            <textarea rows="6" placeholder="您的消息" required></textarea>
+                        </div>
+                        <button type="submit" class="btn">发送消息</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>设计集</h3>
+                    <p>专注于创造有意义、有影响力的数字体验。通过设计连接人与技术，解决问题并提升用户体验。</p>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>快速链接</h3>
+                    <ul class="footer-links">
+                        <li><a href="#home">首页</a></li>
+                        <li><a href="#portfolio">作品集</a></li>
+                        <li><a href="#about">关于我</a></li>
+                        <li><a href="#contact">联系</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>服务</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">UI/UX 设计</a></li>
+                        <li><a href="#">品牌设计</a></li>
+                        <li><a href="#">网页设计</a></li>
+                        <li><a href="#">移动应用设计</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>保持联系</h3>
+                    <p>订阅我的简报，获取设计见解和最新作品。</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="输入您的邮箱" required>
+                        <button type="submit" class="btn">订阅</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2023 <span class="highlight">设计作品集</span>. 保留所有权利.</p>
+                <p>本网站使用Unsplash图片，仅作展示用途</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 脚本 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // 初始化AOS动画
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+    </script>
+</body>
+</html>
