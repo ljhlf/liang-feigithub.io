@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand Interactive 3D Particle System</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        /* 主画布 */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* UI 容器 */
+        #ui-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none; /* 让鼠标事件穿透到 UI 元素 */
+        }
+
+        /* 右侧控制面板 */
+        .panel-right {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            color: white;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+
+        .panel-right h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #00ffff;
+        }
+
+        button {
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+            border: none;
+            padding: 10px 20px;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px #00d2ff;
+        }
+
+        button.active {
+            background: linear-gradient(45deg, #ff0099, #493240);
+            box-shadow: 0 0 10px #ff0099;
+        }
+
+        /* 滑块和颜色选择器样式 */
+        input[type="range"] {
+            width: 100%;
+            accent-color: #00ffff;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        /* 左下角摄像头窗口 */
+        #camera-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 200px; /* 初始宽度 */
+            height: 150px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            pointer-events: auto;
+            resize: both; /* 允许调整大小 */
+            background: #000;
+        }
+
+        #input_video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* 镜像翻转 */
+        }
+
+        /* 右下角全屏按钮 */
+        #fullscreen-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: 0.3s;
+        }
+
+        #fullscreen-btn:hover {
+            background: white;
+            color: black;
+        }
+
+        /* 状态指示器 */
+        #status-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #00ffff;
+            font-family: monospace;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Three.js 画布 -->
+    <div id="canvas-container"></div>
+
+    <!-- UI 层 -->
+    <div id="ui-layer">
+        <div id="status-indicator">系统初始化中... 请授予摄像头权限</div>
+
+        <!-- 摄像头预览 (可调整大小) -->
+        <div id="camera-container">
+            <video id="input_video" playsinline></video>
+        </div>
+
+        <!-- 全屏按钮 -->
+        <div id="fullscreen-btn">⛶</div>
+
+        <!-- 右侧控制面板 -->
+        <div class="panel-right">
+            <!-- <h3>模型选择</h3>
+            <button onclick="switchModel('nebula')" id="btn-nebula" class="active">星云 (Nebula)</button>
+            <button onclick="switchModel('fireworks')" id="btn-fireworks">烟花 (Fireworks)</button>
+            <button onclick="switchModel('saturn')" id="btn-saturn">土星 (Saturn)</button>
+            <button onclick="switchModel('flower')" id="btn-flower">量子花 (Flower)</button> -->
+
+            <h3>参数调整</h3>
+            <div class="control-group">
+                <label>基础颜色 (Base Color)</label>
+                <input type="color" id="color-picker" value="#00ffff">
+            </div>
+            <div class="control-group">
+                <label>粒子密度 (Density)</label>
+                <input type="range" id="density-slider" min="1000" max="40000" value="15000">
+            </div>
+            
+            <div style="font-size: 10px; margin-top:10px; color:#666;">
+                提示：捏合拇指和食指可切换模型。<br>
+                张开手掌扩散，握拳收缩。<br>
+                移动手掌控制旋转。
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入库文件 (使用 ESM CDN) -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                "@mediapipe/hands": "https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js",
+                "@mediapipe/camera_utils": "https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+        // ==========================================
+        // 1. 全局变量与配置
+        // ==========================================
+        let scene, camera, renderer, composer;
+        let particleSystem, bgStars;
+        let particlesData = []; // 存储粒子目标位置
+        const maxParticleCount = 40000; // 最大缓冲数量
+        let currentParticleCount = 15000;
+        let currentShape = 'nebula';
+        
+        // 交互状态
+        let handState = {
+            active: false,
+            x: 0, 
+            y: 0, // 手掌中心位置 (-1 到 1)
+            openness: 1.0, // 手掌张开程度 (0.5 - 2.0)
+            isPinching: false
+        };
+        
+        let targetRotation = { x: 0, y: 0 };
+        let currentRotation = { x: 0, y: 0 };
+        let expansionFactor = 1.0;
+        let baseColor = new THREE.Color(0x00ffff);
+        let time = 0;
+        let lastPinchTime = 0; // 防止切换抖动
+
+        // ==========================================
+        // 2. Three.js 初始化
+        // ==========================================
+        function initThree() {
+            const container = document.getElementById('canvas-container');
+            
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000000, 0.001); // 深空雾气
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 30;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            // 后期处理 (Glow/Bloom)
+            const renderScene = new RenderPass(scene, camera);
+            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+            bloomPass.threshold = 0;
+            bloomPass.strength = 1.2; // 辉光强度
+            bloomPass.radius = 0.5;
+
+            composer = new EffectComposer(renderer);
+            composer.addPass(renderScene);
+            composer.addPass(bloomPass);
+
+            // 创建主粒子系统
+            createParticleSystem();
+            
+            // 创建背景星空
+            createBackgroundStars();
+
+            // 事件监听
+            window.addEventListener('resize', onWindowResize);
+            document.getElementById('color-picker').addEventListener('input', (e) => {
+                baseColor.set(e.target.value);
+            });
+            document.getElementById('density-slider').addEventListener('input', (e) => {
+                currentParticleCount = parseInt(e.target.value);
+                generateShape(currentShape); // 重新生成形状
+            });
+            document.getElementById('fullscreen-btn').addEventListener('click', toggleFullScreen);
+        }
+
+        // ==========================================
+        // 3. 粒子系统核心逻辑
+        // ==========================================
+        function createParticleSystem() {
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(maxParticleCount * 3);
+            const colors = new Float32Array(maxParticleCount * 3);
+            const sizes = new Float32Array(maxParticleCount);
+
+            // 初始化为空
+            for (let i = 0; i < maxParticleCount; i++) {
+                positions[i*3] = (Math.random() - 0.5) * 100;
+                positions[i*3+1] = (Math.random() - 0.5) * 100;
+                positions[i*3+2] = (Math.random() - 0.5) * 100;
+                
+                colors[i*3] = baseColor.r;
+                colors[i*3+1] = baseColor.g;
+                colors[i*3+2] = baseColor.b;
+
+                sizes[i] = Math.random();
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+            // 自定义着色器材质，实现更棒的粒子效果
+            const material = new THREE.PointsMaterial({
+                size: 0.2,
+                vertexColors: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                transparent: true,
+                map: createSprite() // 生成圆形辉光纹理
+            });
+
+            particleSystem = new THREE.Points(geometry, material);
+            scene.add(particleSystem);
+
+            // 初始化数据结构
+            for(let i=0; i<maxParticleCount; i++) {
+                particlesData.push({
+                    tx: 0, ty: 0, tz: 0, // 目标位置
+                    vx: 0, vy: 0, vz: 0, // 速度（用于噪点动画）
+                    speed: 0.02 + Math.random() * 0.04 // 变形速度
+                });
+            }
+
+            generateShape('nebula');
+        }
+
+        function createSprite() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const context = canvas.getContext('2d');
+            const gradient = context.createRadialGradient(16, 16, 0, 16, 16, 16);
+            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+            gradient.addColorStop(0.2, 'rgba(255,255,255,0.8)');
+            gradient.addColorStop(0.5, 'rgba(255,255,255,0.2)');
+            gradient.addColorStop(1, 'rgba(0,0,0,0)');
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, 32, 32);
+            const texture = new THREE.CanvasTexture(canvas);
+            return texture;
+        }
+
+        function createBackgroundStars() {
+            const geometry = new THREE.BufferGeometry();
+            const count = 2000;
+            const pos = new Float32Array(count * 3);
+            for(let i=0; i<count*3; i++) {
+                pos[i] = (Math.random() - 0.5) * 200; // 远距离散布
+            }
+            geometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            const material = new THREE.PointsMaterial({
+                size: 0.5,
+                color: 0x444444,
+                transparent: true,
+                opacity: 0.6
+            });
+            bgStars = new THREE.Points(geometry, material);
+            scene.add(bgStars);
+        }
+
+        // ==========================================
+        // 4. 形状生成算法 (数学模型)
+        // ==========================================
+        function generateShape(type) {
+            currentShape = type;
+            updateButtonState(type);
+
+            for (let i = 0; i < maxParticleCount; i++) {
+                let x, y, z;
+                
+                // 如果超出当前密度，将多余粒子隐藏到中心或无穷远
+                if (i >= currentParticleCount) {
+                    particlesData[i].tx = 0;
+                    particlesData[i].ty = 0;
+                    particlesData[i].tz = 0;
+                    continue;
+                }
+
+                if (type === 'nebula') {
+                    // 球体随机云
+                    const r = 10 * Math.cbrt(Math.random());
+                    const theta = Math.random() * 2 * Math.PI;
+                    const phi = Math.acos(2 * Math.random() - 1);
+                    x = r * Math.sin(phi) * Math.cos(theta);
+                    y = r * Math.sin(phi) * Math.sin(theta);
+                    z = r * Math.cos(phi);
+                } 
+                else if (type === 'saturn') {
+                    // 土星：球体 + 环
+                    const isRing = Math.random() > 0.6;
+                    if (isRing) {
+                        const r = 12 + Math.random() * 8; // Ring radius
+                        const theta = Math.random() * 2 * Math.PI;
+                        x = r * Math.cos(theta);
+                        z = r * Math.sin(theta);
+                        y = (Math.random() - 0.5) * 0.5; // Thin ring
+                    } else {
+                        const r = 6 * Math.cbrt(Math.random());
+                        const theta = Math.random() * 2 * Math.PI;
+                        const phi = Math.acos(2 * Math.random() - 1);
+                        x = r * Math.sin(phi) * Math.cos(theta);
+                        y = r * Math.sin(phi) * Math.sin(theta);
+                        z = r * Math.cos(phi);
+                    }
+                }
+                else if (type === 'fireworks') {
+                    // 爆炸射线
+                    const r = 15 * Math.random();
+                    const theta = Math.random() * 2 * Math.PI;
+                    const phi = Math.acos(2 * Math.random() - 1);
+                    // 聚集在几条射线上
+                    const streak = Math.floor(Math.random() * 10); 
+                    // 这里简化为球形发散，但带有聚集感
+                    x = r * Math.sin(phi) * Math.cos(theta);
+                    y = r * Math.sin(phi) * Math.sin(theta);
+                    z = r * Math.cos(phi);
+                }
+                else if (type === 'flower') {
+                    // 参数化花朵 (Phyllotaxis / Rose curve)
+                    const r = 10; 
+                    const u = Math.random() * 2 * Math.PI; // 0 to 2PI
+                    const v = Math.random() * Math.PI; // 0 to PI
+                    
+                    // 简单数学玫瑰
+                    const k = 3; // 花瓣数
+                    const radius = 8 * Math.cos(k * u) + 2;
+                    x = radius * Math.cos(u) * Math.sin(v);
+                    z = radius * Math.sin(u) * Math.sin(v);
+                    y = radius * Math.cos(v) * 2;
+                }
+
+                particlesData[i].tx = x;
+                particlesData[i].ty = y;
+                particlesData[i].tz = z;
+            }
+        }
+
+        window.switchModel = generateShape; // 暴露给全局HTML按钮
+
+        function updateButtonState(activeType) {
+            document.querySelectorAll('.panel-right button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${activeType}`)?.classList.add('active');
+        }
+
+        // ==========================================
+        // 5. 渲染循环与交互逻辑
+        // ==========================================
+        function animate() {
+            requestAnimationFrame(animate);
+
+            time += 0.005;
+
+            // 1. 处理手部交互产生的旋转平滑过渡
+            // 如果手部未激活，缓慢自转；如果激活，跟随手部位置
+            if (handState.active) {
+                targetRotation.y = handState.x * 2; // 手向左移，模型向左转
+                targetRotation.x = handState.y * 2;
+                expansionFactor = THREE.MathUtils.lerp(expansionFactor, handState.openness, 0.1);
+            } else {
+                targetRotation.y += 0.002; // 自动旋转
+                expansionFactor = THREE.MathUtils.lerp(expansionFactor, 1.0, 0.05); // 复原
+            }
+
+            // 平滑插值旋转
+            currentRotation.x += (targetRotation.x - currentRotation.x) * 0.05;
+            currentRotation.y += (targetRotation.y - currentRotation.y) * 0.05;
+
+            particleSystem.rotation.x = currentRotation.x;
+            particleSystem.rotation.y = currentRotation.y;
+
+            // 2. 更新粒子位置 (Morphing & Expansion)
+            const positions = particleSystem.geometry.attributes.position.array;
+            const colors = particleSystem.geometry.attributes.color.array;
+
+            // 基于旋转角度计算色相偏移 (Hue Shift)
+            const hueOffset = (particleSystem.rotation.y / (Math.PI * 2)) % 1;
+            const hsl = {};
+            baseColor.getHSL(hsl);
+            const dynamicColor = new THREE.Color().setHSL((hsl.h + hueOffset) % 1, hsl.s, hsl.l);
+
+            for (let i = 0; i < maxParticleCount; i++) {
+                if (i >= currentParticleCount) {
+                    // 隐藏多余粒子
+                    positions[i*3] = 0;
+                    positions[i*3+1] = 0;
+                    positions[i*3+2] = 0;
+                    continue;
+                }
+
+                const data = particlesData[i];
+                
+                // 插值移动到目标形状位置
+                const currentX = positions[i*3];
+                const currentY = positions[i*3+1];
+                const currentZ = positions[i*3+2];
+
+                // 增加一点Perlin Noise式的浮动感
+                const noiseX = Math.sin(time + i) * 0.02;
+                const noiseY = Math.cos(time + i * 0.5) * 0.02;
+
+                // 核心物理位置更新
+                // 原始位置 * 扩张系数 + 噪点
+                const targetX = data.tx * expansionFactor + noiseX;
+                const targetY = data.ty * expansionFactor + noiseY;
+                const targetZ = data.tz * expansionFactor;
+
+                positions[i*3] += (targetX - currentX) * data.speed;
+                positions[i*3+1] += (targetY - currentY) * data.speed;
+                positions[i*3+2] += (targetZ - currentZ) * data.speed;
+
+                // 颜色更新 (五彩斑斓: 基于位置混入颜色)
+                const mixFactor = 0.5 + Math.sin(i * 0.1 + time) * 0.5;
+                colors[i*3] = dynamicColor.r * 0.8 + mixFactor * 0.2;
+                colors[i*3+1] = dynamicColor.g * 0.8 + (1-mixFactor) * 0.2;
+                colors[i*3+2] = dynamicColor.b * 0.8 + Math.cos(time)*0.2;
+            }
+
+            particleSystem.geometry.attributes.position.needsUpdate = true;
+            particleSystem.geometry.attributes.color.needsUpdate = true;
+
+            // 背景轻微移动
+            bgStars.rotation.y = time * 0.05;
+
+            // 渲染
+            composer.render();
+        }
+
+        // ==========================================
+        // 6. MediaPipe Hands 集成
+        // ==========================================
+        function initMediaPipe() {
+            const videoElement = document.getElementById('input_video');
+            const statusDiv = document.getElementById('status-indicator');
+
+            const hands = new window.Hands({locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+            }});
+
+            hands.setOptions({
+                maxNumHands: 1,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.7,
+                minTrackingConfidence: 0.7
+            });
+
+            hands.onResults(onHandsResults);
+
+            const cameraUtils = new window.Camera(videoElement, {
+                onFrame: async () => {
+                    await hands.send({image: videoElement});
+                },
+                width: 320,
+                height: 240
+            });
+
+            cameraUtils.start()
+                .then(() => statusDiv.innerText = "系统就绪 - 请展示手掌")
+                .catch(err => statusDiv.innerText = "摄像头错误: " + err);
+        }
+
+        function onHandsResults(results) {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                handState.active = true;
+
+                // 1. 计算手掌中心 (用于控制旋转)
+                // 选取手腕(0)和中指根部(9)的中间点作为近似中心
+                const centerX = landmarks[9].x; 
+                const centerY = landmarks[9].y;
+                
+                // MediaPipe x坐标是0-1, 0在左边。Three.js 旋转需要映射到 -1 到 1
+                // 翻转X轴，因为摄像头是镜像的
+                handState.x = (0.5 - centerX) * 4; // 乘系数放大灵敏度
+                handState.y = (0.5 - centerY) * 3;
+
+                // 2. 计算开合程度 (Expansion)
+                // 使用边界框面积或指尖到手腕的平均距离
+                const wrist = landmarks[0];
+                const tips = [4, 8, 12, 16, 20];
+                let totalDist = 0;
+                tips.forEach(idx => {
+                    const tip = landmarks[idx];
+                    const d = Math.sqrt(Math.pow(tip.x - wrist.x, 2) + Math.pow(tip.y - wrist.y, 2));
+                    totalDist += d;
+                });
+                const avgDist = totalDist / 5;
+                // 经验值：握拳约0.15，张开约0.4
+                // 映射到 0.5 (收缩) - 2.0 (扩散)
+                let openRate = (avgDist - 0.15) / (0.4 - 0.15); 
+                openRate = Math.max(0, Math.min(1, openRate)); // Clamp 0-1
+                handState.openness = 0.5 + openRate * 1.5;
+
+                // 3. 捏合检测 (Pinch to Switch)
+                const thumbTip = landmarks[4];
+                const indexTip = landmarks[8];
+                const pinchDist = Math.sqrt(Math.pow(thumbTip.x - indexTip.x, 2) + Math.pow(thumbTip.y - indexTip.y, 2));
+                
+                const now = Date.now();
+                if (pinchDist < 0.05) {
+                    if (!handState.isPinching && (now - lastPinchTime > 1000)) {
+                        // 触发切换
+                        cycleModel();
+                        lastPinchTime = now;
+                        handState.isPinching = true;
+                        
+                        // 视觉反馈
+                        const status = document.getElementById('status-indicator');
+                        status.innerText = "手势触发：切换模型";
+                        status.style.color = "#ff00ff";
+                        setTimeout(() => {
+                             status.style.color = "#00ffff";
+                             status.innerText = "系统运行中";
+                        }, 1000);
+                    }
+                } else {
+                    handState.isPinching = false;
+                }
+
+            } else {
+                handState.active = false;
+            }
+        }
+
+        function cycleModel() {
+            const models = ['nebula', 'fireworks', 'saturn', 'flower'];
+            const idx = models.indexOf(currentShape);
+            const nextIdx = (idx + 1) % models.length;
+            generateShape(models[nextIdx]);
+        }
+
+        // ==========================================
+        // 7. 辅助函数
+        // ==========================================
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // 启动程序
+        initThree();
+        animate();
+        // 延迟一点加载摄像头，避免阻塞UI渲染
+        setTimeout(initMediaPipe, 1000);
+
+    </script>
+</body>
+</html>
