@@ -155,7 +155,7 @@
 
     <!-- Loading Screen -->
     <div id="loader">
-        <div>启动神经连接...</div>
+        <div>...</div>
         <div style="font-size: 14px; margin-top: 10px; color: #666;">请允许摄像头权限</div>
     </div>
 
@@ -455,7 +455,7 @@
         
         function onResults(results) {
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                document.getElementById('status').innerText = "系统连接：已捕获手部信号";
+                document.getElementById('status').innerText = "已捕获大肘子";
                 document.getElementById('status').style.color = "#00ff00";
                 CONFIG.handDetected = true;
 
@@ -506,7 +506,7 @@
 
             } else {
                 CONFIG.handDetected = false;
-                document.getElementById('status').innerText = "信号丢失：搜索中...";
+                document.getElementById('status').innerText = "搜索大手子中...";
                 document.getElementById('status').style.color = "#00ffff";
                 // Slowly return to idle expansion
                 CONFIG.expansion = 1.0;
@@ -611,7 +611,15 @@
             starField.rotation.y -= 0.02 * delta;
 
             composer.render();
-        }
+        };
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+            // 重新计算bloom分辨率
+            bloomPass.resolution.set(window.innerWidth / (CONFIG.isMobile ? 2 : 1), window.innerHeight / (CONFIG.isMobile ? 2 : 1));
+        });
 
         animate();
 
