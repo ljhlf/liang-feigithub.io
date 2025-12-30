@@ -2,561 +2,567 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Hand Tracking Particles (Mobile Optimized)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Hand Tracking Particle System</title>
     <style>
-        /* 基础重置与禁止触摸缩放 */
-        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; touch-action: none; -webkit-user-select: none; user-select: none; }
-        canvas { display: block; width: 100vw; height: 100vh; }
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', sans-serif; }
+        canvas { display: block; }
         
-        /* UI 容器 */
+        /* UI Container */
         #ui-container {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 10;
-            display: flex; flex-direction: column; justify-content: space-between;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
         }
 
-        /* 通用毛玻璃样式 */
+        /* Common Glassmorphism Style */
         .glass-panel {
-            background: rgba(20, 25, 40, 0.65);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 16px;
+            background: rgba(20, 20, 30, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
             pointer-events: auto;
             color: white;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        /* 顶部栏 (设置按钮 + 状态) */
-        #top-bar {
             padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
         }
 
-        #status-box {
-            max-width: 70%;
-        }
-        #status {
-            font-size: 14px; font-weight: 600; color: #00ffff;
-            text-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
-            margin-bottom: 4px;
-        }
-        #hint { font-size: 10px; color: #bbb; line-height: 1.3; }
-
-        /* 设置按钮 */
-        #toggle-controls {
-            width: 44px; height: 44px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px; cursor: pointer;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #fff;
-            z-index: 20;
-        }
-
-        /* 侧边控制面板 (抽屉式) */
+        /* Right Side Controls */
         #controls {
             position: absolute;
-            top: 0; right: 0;
-            width: 260px; height: 100%;
-            background: rgba(10, 10, 15, 0.95);
-            backdrop-filter: blur(20px);
-            padding: 20px;
-            box-sizing: border-box;
-            transform: translateX(100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex; flex-direction: column; gap: 15px;
-            pointer-events: auto;
-            z-index: 15;
-            border-left: 1px solid rgba(255,255,255,0.1);
-            overflow-y: auto;
+            
+            top: 20px;
+            right: 20px;
+            width: 220px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
         }
-        #controls.visible { transform: translateX(0); }
-        
-        /* 控制面板内部元素 */
-        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        h3 { margin: 0; font-size: 16px; color: #00ffff; letter-spacing: 1px; }
-        .close-btn { background: none; border: none; color: #aaa; font-size: 24px; padding: 10px; }
 
-        label { font-size: 12px; display: flex; justify-content: space-between; margin-bottom: 5px; color: #ddd; }
-        input[type="range"] { width: 100%; accent-color: #00ffff; height: 4px; margin: 10px 0; }
-        input[type="color"] { width: 100%; border: none; height: 35px; border-radius: 8px; background: none; }
+        h3 { margin: 0 0 10px 0; font-size: 16px; color: #00ffff; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* 模型按钮网格 */
-        .model-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        label { font-size: 12px; display: flex; justify-content: space-between; margin-top: 5px; }
+        
+        input[type="range"] { width: 100%; accent-color: #00ffff; cursor: pointer; }
+        input[type="color"] { width: 100%; border: none; height: 30px; cursor: pointer; background: none; }
+        
         button.model-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #eee; padding: 12px 5px;
-            border-radius: 8px; font-size: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
             transition: 0.2s;
+            text-align: left;
+            font-size: 13px;
         }
-        button.model-btn.active { background: rgba(0, 255, 255, 0.25); border-color: #00ffff; color: white; }
-
-        /* 底部区域 */
-        #bottom-area {
-            padding: 20px;
-            display: flex; align-items: flex-end; justify-content: space-between;
+        button.model-btn:hover, button.model-btn.active {
+            background: rgba(0, 255, 255, 0.2);
+            border-color: #00ffff;
         }
 
-        /* 摄像头画中画 */
+        /* Bottom Left Camera PIP */
         #camera-container {
-            width: 100px; height: 133px; /* 3:4 ratio for portrait input */
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 200px;
+            height: 150px;
             overflow: hidden;
-            position: relative;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.2);
-            transition: opacity 0.3s;
+            resize: both; /* Resize capability */
+            min-width: 100px;
+            min-height: 75px;
+            max-width: 400px;
         }
-        #camera-container.hidden { opacity: 0; pointer-events: none; }
-        #input-video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        
+        #input-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Mirror effect */
+        }
+        
+        .pip-label {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            font-size: 10px;
+            background: rgba(0,0,0,0.5);
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
 
-        /* 全屏按钮 */
+        /* Bottom Right Fullscreen */
         #fullscreen-btn {
-            width: 44px; height: 44px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px; cursor: pointer;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
         }
 
-        /* 加载遮罩 */
+        /* Status & Hints */
+        #status {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 12px;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+        }
+
+        #hint {
+            margin-top: 10px;
+            font-size: 11px;
+            color: #aaa;
+            line-height: 1.4;
+        }
+
+        /* Loading Overlay */
         #loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: #000;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 100; transition: opacity 0.5s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: #00ffff;
+            font-size: 20px;
+            transition: opacity 0.5s;
         }
-        .spinner {
-            width: 40px; height: 40px; border: 3px solid rgba(0,255,255,0.3);
-            border-top: 3px solid #00ffff; border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
     
     <!-- MediaPipe Dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
     <!-- Loading Screen -->
     <div id="loader">
-        <div class="spinner"></div>
-        <div style="font-size: 14px; margin-top: 15px; color: #888;">正在初始化引擎...</div>
-        <div style="font-size: 12px; margin-top: 5px; color: #555;">请允许摄像头权限</div>
+        <div>...</div>
+        <div style="font-size: 14px; margin-top: 10px; color: #666;">请允许摄像头权限</div>
     </div>
 
     <!-- UI Overlay -->
     <div id="ui-container">
-        
-        <div id="top-bar">
-            <div id="status-box">
-                <div id="status">等待信号...</div>
-                <div id="hint">交互: 张手(呼吸) / 移动(旋转) / 捏合(切换)</div>
-            </div>
-            <button id="toggle-controls">⚙️</button>
-        </div>
+        <div id="status">系统待机 - 等待手部识别...</div>
 
-        <!-- Right Drawer Controls -->
-        <div id="controls">
-            <div class="panel-header">
-                <h3>粒子控制台</h3>
-                <button class="close-btn" id="close-controls">×</button>
-            </div>
+        <!-- Controls Sidebar -->
+        <div id="controls" class="glass-panel">
+            <h3>粒子控制台</h3>
             
-            <div style="margin-bottom: 20px;">
-                <label>模型切换</label>
-                <div class="model-grid">
-                    <button class="model-btn active" data-type="nebula">🌌 星云</button>
-                    <button class="model-btn" data-type="fireworks">🎆 烟花</button>
-                    <button class="model-btn" data-type="saturn">🪐 土星</button>
-                    <button class="model-btn" data-type="flower">🌸 虚空花</button>
+            <div style="margin-bottom: 15px;">
+                <label>模型选择 (捏合拇指+中指切换)</label>
+                <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 5px;">
+                    <button class="model-btn active" data-type="nebula">🌌 星云 (Nebula)</button>
+                    <button class="model-btn" data-type="fireworks">🎆 烟花 (Fireworks)</button>
+                    <button class="model-btn" data-type="saturn">🪐 土星 (Saturn)</button>
+                    <button class="model-btn" data-type="flower">🌸 虚空花 (Flower)</button>
                 </div>
             </div>
 
             <div>
-                <label>粒子颜色</label>
-                <input type="color" id="color-picker" value="#00ffff">
+                <label>基础颜色 <input type="color" id="color-picker" value="#00ffff"></label>
             </div>
             
             <div>
-                <label>粒子密度 <span id="density-val">15k</span></label>
-                <input type="range" id="density-slider" min="5000" max="30000" step="1000" value="15000">
+                <label>粒子密度 <span id="density-val">20k</span></label>
+                <input type="range" id="density-slider" min="5000" max="40000" step="1000" value="20000">
             </div>
 
-            <div>
-                <label>画中画开关</label>
-                <div style="display:flex; gap:10px; margin-top:5px;">
-                    <button class="model-btn" style="flex:1" onclick="document.getElementById('camera-container').classList.toggle('hidden')">显示/隐藏</button>
-                </div>
-            </div>
-            
-            <div style="margin-top:auto; font-size:10px; color:#666; padding-top:20px;">
-                Designed for Mobile & Tablet
+            <div id="hint">
+                交互指南:<br>
+                ✋ 张开/握拳: 粒子扩散/收缩<br>
+                👋 移动手部: 旋转模型<br>
+                👌 拇指+中指捏合: 切换模型
             </div>
         </div>
 
-        <div id="bottom-area">
-            <div id="camera-container" class="glass-panel">
-                <video id="input-video" playsinline muted autoplay></video>
-            </div>
-            <div id="fullscreen-btn" class="glass-panel">⛶</div>
+        <!-- Camera PIP -->
+        <div id="camera-container" class="glass-panel">
+            <video id="input-video" playsinline></video>
+            <div class="pip-label">LIVE FEED</div>
+        </div>
+
+        <!-- Fullscreen -->
+        <div id="fullscreen-btn" class="glass-panel">
+            ⛶
         </div>
     </div>
 
     <!-- Three.js Logic -->
-    <script type="module">
-        import * as THREE from 'https://cdn.skypack.dev/three@0.136.0';
-        import { EffectComposer } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/postprocessing/EffectComposer.js';
-        import { RenderPass } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/postprocessing/RenderPass.js';
-        import { UnrealBloomPass } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+<script type="module">
+    import * as THREE from 'https://cdn.skypack.dev/three@0.136.0';
+    import { EffectComposer } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/postprocessing/UnrealBloomPass.js';
 
-        // --- Detection & Config ---
-        const isMobile = window.innerWidth < 768;
+    // --- 1. Mobile Detection ---
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-        const CONFIG = {
-            particleCount: isMobile ? 12000 : 20000, // Reduce count on mobile
-            baseColor: new THREE.Color(0x00ffff),
-            expansion: 1.0,
-            targetRotation: { x: 0, y: 0 },
-            handDetected: false,
-            pinchCooldown: 0
-        };
+    // --- Configuration ---
+    const CONFIG = {
+        // 手机端大幅降低粒子数以防崩溃
+        particleCount: isMobile ? 6000 : 15000, 
+        baseColor: new THREE.Color(0x00ffff),
+        expansion: 1.0,
+        rotationSpeed: 0.0,
+        targetRotation: { x: 0, y: 0 },
+        currentRotation: { x: 0, y: 0 },
+        handDetected: false,
+        pinchCooldown: 0
+    };
 
-        // --- Three.js Setup ---
-        const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x000000, 0.002);
+    // 更新UI上的显示数值
+    if(isMobile) {
+        document.getElementById('density-slider').value = CONFIG.particleCount;
+        document.getElementById('density-val').innerText = (CONFIG.particleCount/1000).toFixed(0) + 'k';
+    }
 
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        // Adjust camera Z based on screen ratio (Portrait needs to be further back)
-        camera.position.z = window.innerWidth < window.innerHeight ? 40 : 30;
+    // --- Three.js Setup ---
+    const scene = new THREE.Scene();
+    // 手机端可以适当移除雾效或减弱
+    scene.fog = new THREE.FogExp2(0x000000, 0.001);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: "high-performance" });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        // Cap pixel ratio at 2.0 for high-density mobile screens to save battery
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
-        document.body.appendChild(renderer.domElement);
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 30;
 
-        // --- Post Processing (Bloom) Optimized ---
+    const renderer = new THREE.WebGLRenderer({ 
+        antialias: !isMobile, // 手机端关闭抗锯齿以提升性能
+        alpha: true,
+        powerPreference: "high-performance"
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    // 限制最大像素比，防止高分屏手机渲染压力过大
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+    document.body.appendChild(renderer.domElement);
+
+    // --- Post Processing (Bloom) - PC Only ---
+    let composer = null;
+    let bloomPass = null;
+
+    if (!isMobile) {
         const renderScene = new RenderPass(scene, camera);
-        
-        // On mobile, reduce bloom resolution to half for performance
-        const bloomRes = new THREE.Vector2(
-            window.innerWidth / (isMobile ? 2 : 1), 
-            window.innerHeight / (isMobile ? 2 : 1)
-        );
-        
-        const bloomPass = new UnrealBloomPass(bloomRes, 1.5, 0.4, 0.85);
+        bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
         bloomPass.threshold = 0;
-        bloomPass.strength = 1.3;
+        bloomPass.strength = 1.2;
         bloomPass.radius = 0.5;
 
-        const composer = new EffectComposer(renderer);
+        composer = new EffectComposer(renderer);
         composer.addPass(renderScene);
         composer.addPass(bloomPass);
+    }
 
-        // --- Background Stars ---
-        const starsGeometry = new THREE.BufferGeometry();
-        const starCount = 3000;
-        const starPos = new Float32Array(starCount * 3);
-        for(let i=0; i<starCount * 3; i++) {
-            starPos[i] = (Math.random() - 0.5) * 500;
-        }
-        starsGeometry.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-        const starsMaterial = new THREE.PointsMaterial({ color: 0x888888, size: 0.8, transparent: true, opacity: 0.5 });
-        const starField = new THREE.Points(starsGeometry, starsMaterial);
-        scene.add(starField);
+    // --- Background Stars ---
+    const starsGeometry = new THREE.BufferGeometry();
+    const starCount = isMobile ? 1500 : 5000; // 减少背景星空数量
+    const starPos = new Float32Array(starCount * 3);
+    for(let i=0; i<starCount * 3; i++) {
+        starPos[i] = (Math.random() - 0.5) * 400; 
+    }
+    starsGeometry.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+    const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5, transparent: true, opacity: 0.6 });
+    const starField = new THREE.Points(starsGeometry, starsMaterial);
+    scene.add(starField);
 
-        // --- Main Particle System ---
-        let geometry, material, points;
-        let originalPositions = [];
-        let currentPositions = []; 
+    // --- Main Particle System ---
+    let geometry, material, points;
+    let originalPositions = []; 
+    let currentPositions = [];  
 
-        function initParticles(count) {
-            if(points) scene.remove(points);
+    function initParticles(count) {
+        if(points) scene.remove(points);
 
-            geometry = new THREE.BufferGeometry();
-            currentPositions = new Float32Array(count * 3);
-            originalPositions = new Float32Array(count * 3);
-            const colors = new Float32Array(count * 3);
+        geometry = new THREE.BufferGeometry();
+        currentPositions = new Float32Array(count * 3);
+        originalPositions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
 
-            for (let i = 0; i < count; i++) {
-                currentPositions[i*3] = (Math.random() - 0.5) * 10;
-                currentPositions[i*3+1] = (Math.random() - 0.5) * 10;
-                currentPositions[i*3+2] = (Math.random() - 0.5) * 10;
-                
-                colors[i*3] = Math.random();
-                colors[i*3+1] = Math.random();
-                colors[i*3+2] = Math.random();
-            }
-
-            geometry.setAttribute('position', new THREE.BufferAttribute(currentPositions, 3));
-            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-            material = new THREE.ShaderMaterial({
-                uniforms: {
-                    time: { value: 0 },
-                    color: { value: CONFIG.baseColor },
-                    expansion: { value: 1.0 },
-                    // Make particles slightly larger on mobile high-DPI screens
-                    pointSize: { value: isMobile ? 4.0 : 3.0 } 
-                },
-                vertexShader: `
-                    uniform float time;
-                    uniform float expansion;
-                    uniform float pointSize;
-                    attribute vec3 color;
-                    varying vec3 vColor;
-                    void main() {
-                        vColor = color;
-                        vec3 pos = position * expansion;
-                        // Organic noise movement
-                        pos.x += sin(time * 2.0 + position.y * 0.5) * 0.1;
-                        pos.y += cos(time * 1.5 + position.x * 0.5) * 0.1;
-                        
-                        vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-                        gl_PointSize = pointSize * (40.0 / -mvPosition.z);
-                        gl_Position = projectionMatrix * mvPosition;
-                    }
-                `,
-                fragmentShader: `
-                    uniform vec3 color;
-                    varying vec3 vColor;
-                    void main() {
-                        float r = distance(gl_PointCoord, vec2(0.5, 0.5));
-                        if (r > 0.5) discard;
-                        float glow = 1.0 - (r * 2.0);
-                        glow = pow(glow, 1.5);
-                        gl_FragColor = vec4(color * vColor * 2.0, glow);
-                    }
-                `,
-                blending: THREE.AdditiveBlending,
-                depthTest: false,
-                transparent: true
-            });
-
-            points = new THREE.Points(geometry, material);
-            scene.add(points);
-            setShape('nebula');
+        for (let i = 0; i < count; i++) {
+            currentPositions[i*3] = (Math.random() - 0.5) * 10;
+            currentPositions[i*3+1] = (Math.random() - 0.5) * 10;
+            currentPositions[i*3+2] = (Math.random() - 0.5) * 10;
+            
+            colors[i*3] = Math.random();
+            colors[i*3+1] = Math.random();
+            colors[i*3+2] = Math.random();
         }
 
-        // --- Shape Logic ---
-        const SHAPES = {
-            nebula: (i) => {
-                const r = Math.random() * 10;
-                const theta = Math.random() * Math.PI * 2;
-                const phi = Math.acos((Math.random() * 2) - 1);
-                return [r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi)];
+        geometry.setAttribute('position', new THREE.BufferAttribute(currentPositions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        material = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 },
+                color: { value: CONFIG.baseColor },
+                expansion: { value: 1.0 },
+                // 手机屏幕DPI高，适当增大基础点大小
+                pointSize: { value: isMobile ? 5.0 : 3.0 },
+                pixelRatio: { value: renderer.getPixelRatio() }
             },
-            fireworks: (i) => {
-                const r = Math.pow(Math.random(), 1/3) * 15;
-                const theta = Math.random() * Math.PI * 2;
-                const phi = Math.acos((Math.random() * 2) - 1);
-                return [r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi)];
-            },
-            saturn: (i) => {
-                if (Math.random() > 0.7) {
-                    const r = Math.random() * 4;
-                    const theta = Math.random() * Math.PI * 2;
-                    const phi = Math.acos((Math.random() * 2) - 1);
-                    return [r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi)];
-                } else {
-                    const r = 6 + Math.random() * 6;
-                    const theta = Math.random() * Math.PI * 2;
-                    return [r * Math.cos(theta), (Math.random()-0.5) * 0.5, r * Math.sin(theta)];
+            vertexShader: `
+                uniform float time;
+                uniform float expansion;
+                uniform float pointSize;
+                uniform float pixelRatio;
+                attribute vec3 color;
+                varying vec3 vColor;
+                void main() {
+                    vColor = color;
+                    vec3 pos = position * expansion;
+                    pos.x += sin(time * 2.0 + position.y) * 0.1;
+                    pos.y += cos(time * 1.5 + position.x) * 0.1;
+                    
+                    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                    // 根据设备像素比调整大小，防止在Retina屏太小
+                    gl_PointSize = pointSize * pixelRatio * (30.0 / -mvPosition.z);
+                    gl_Position = projectionMatrix * mvPosition;
                 }
-            },
-            flower: (i) => {
-                const u = Math.random() * Math.PI * 2;
-                const v = Math.random() * Math.PI;
-                const r = 5 + 3 * Math.sin(5 * u) * Math.sin(5 * v);
-                return [r * Math.sin(v) * Math.cos(u), r * Math.sin(v) * Math.sin(u), r * Math.cos(v)];
-            }
-        };
+            `,
+            fragmentShader: `
+                uniform vec3 color;
+                varying vec3 vColor;
+                void main() {
+                    float r = distance(gl_PointCoord, vec2(0.5, 0.5));
+                    if (r > 0.5) discard;
+                    float glow = 1.0 - (r * 2.0);
+                    glow = pow(glow, 1.5);
+                    gl_FragColor = vec4(color * vColor * 2.0, glow);
+                }
+            `,
+            blending: THREE.AdditiveBlending,
+            depthTest: false,
+            transparent: true
+        });
 
-        function setShape(type) {
-            const generator = SHAPES[type] || SHAPES.nebula;
-            for (let i = 0; i < CONFIG.particleCount; i++) {
-                const [x, y, z] = generator(i);
-                originalPositions[i*3] = x;
-                originalPositions[i*3+1] = y;
-                originalPositions[i*3+2] = z;
-            }
-            document.querySelectorAll('.model-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.type === type));
-        }
+        points = new THREE.Points(geometry, material);
+        scene.add(points);
+        setShape('nebula');
+    }
 
-        // --- Interaction ---
-        function updateParticles(deltaTime) {
-            const positions = points.geometry.attributes.position.array;
-            const lerpSpeed = 3.0 * deltaTime;
-            
-            // Morphing
-            for (let i = 0; i < CONFIG.particleCount * 3; i++) {
-                positions[i] += (originalPositions[i] - positions[i]) * lerpSpeed;
-            }
-            points.geometry.attributes.position.needsUpdate = true;
-
-            // Rotation
-            if (!CONFIG.handDetected) {
-                points.rotation.y += 0.1 * deltaTime;
-                points.rotation.x *= (1 - deltaTime); // Return to level
+    // --- Shape Generators (保持不变) ---
+    const SHAPES = {
+        nebula: (i) => {
+            const r = Math.random() * 10;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos((Math.random() * 2) - 1);
+            return [r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi)];
+        },
+        fireworks: (i) => {
+            const r = Math.pow(Math.random(), 1/3) * 15;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos((Math.random() * 2) - 1);
+            return [r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi)];
+        },
+        saturn: (i) => {
+            if (Math.random() > 0.7) {
+                const r = Math.random() * 4;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos((Math.random() * 2) - 1);
+                return [r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi)];
             } else {
-                points.rotation.x += (CONFIG.targetRotation.x - points.rotation.x) * 5 * deltaTime;
-                points.rotation.y += (CONFIG.targetRotation.y - points.rotation.y) * 5 * deltaTime;
+                const r = 6 + Math.random() * 6;
+                const theta = Math.random() * Math.PI * 2;
+                return [r * Math.cos(theta), (Math.random()-0.5) * 0.5, r * Math.sin(theta)];
             }
+        },
+        flower: (i) => {
+            const u = Math.random() * Math.PI * 2;
+            const v = Math.random() * Math.PI;
+            const r = 5 + 3 * Math.sin(5 * u) * Math.sin(5 * v);
+            return [r * Math.sin(v) * Math.cos(u), r * Math.sin(v) * Math.sin(u), r * Math.cos(v)];
+        }
+    };
 
-            // Expansion & Color
-            material.uniforms.expansion.value += (CONFIG.expansion - material.uniforms.expansion.value) * 5 * deltaTime;
-            
-            const hueShift = (points.rotation.y * 0.02) % 1.0; 
-            const hsl = {};
-            CONFIG.baseColor.getHSL(hsl);
-            material.uniforms.color.value.setHSL((hsl.h + hueShift) % 1.0, hsl.s, hsl.l);
-            material.uniforms.time.value += deltaTime;
+    function setShape(type) {
+        const positions = points.geometry.attributes.position.array;
+        const generator = SHAPES[type] || SHAPES.nebula;
+        for (let i = 0; i < CONFIG.particleCount; i++) {
+            const [x, y, z] = generator(i);
+            originalPositions[i*3] = x;
+            originalPositions[i*3+1] = y;
+            originalPositions[i*3+2] = z;
+        }
+        document.querySelectorAll('.model-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.type === type);
+        });
+    }
+
+    function updateParticles(deltaTime) {
+        const positions = points.geometry.attributes.position.array;
+        const lerpSpeed = 3.0 * deltaTime;
+        for (let i = 0; i < CONFIG.particleCount * 3; i++) {
+            positions[i] += (originalPositions[i] - positions[i]) * lerpSpeed;
+        }
+        points.geometry.attributes.position.needsUpdate = true;
+
+        if (!CONFIG.handDetected) {
+            points.rotation.y += 0.1 * deltaTime;
+        } else {
+            points.rotation.x += (CONFIG.targetRotation.x - points.rotation.x) * 5 * deltaTime;
+            points.rotation.y += (CONFIG.targetRotation.y - points.rotation.y) * 5 * deltaTime;
         }
 
-        // --- MediaPipe ---
-        const videoElement = document.getElementById('input-video');
-        
-        function onResults(results) {
-            // Hide Loader
-            const loader = document.getElementById('loader');
-            if(loader) { loader.style.opacity = 0; setTimeout(() => loader.remove(), 500); }
+        material.uniforms.expansion.value += (CONFIG.expansion - material.uniforms.expansion.value) * 5 * deltaTime;
+        const hueShift = (points.rotation.y * 0.001); 
+        const hsl = {};
+        CONFIG.baseColor.getHSL(hsl);
+        material.uniforms.color.value.setHSL((hsl.h + hueShift) % 1.0, hsl.s, hsl.l);
+        material.uniforms.time.value += deltaTime;
+    }
 
-            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                CONFIG.handDetected = true;
-                document.getElementById('status').innerText = "✅ 神经链路已连接";
-                document.getElementById('status').style.color = "#00ff00";
+    // --- MediaPipe Hands ---
+    const videoElement = document.getElementById('input-video');
+    
+    function onResults(results) {
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+            document.getElementById('status').innerText = "已捕获手部";
+            document.getElementById('status').style.color = "#00ff00";
+            CONFIG.handDetected = true;
 
-                const landmarks = results.multiHandLandmarks[0];
-                
-                // 1. Rotation (Middle Finger MCP)
-                const x = landmarks[9].x; 
-                const y = landmarks[9].y;
-                
-                // Wider range for mobile sensitivity
-                CONFIG.targetRotation.y = (x - 0.5) * Math.PI * 2.5;
-                CONFIG.targetRotation.x = (y - 0.5) * Math.PI * 1.5;
+            const landmarks = results.multiHandLandmarks[0];
+            const x = landmarks[9].x; 
+            const y = landmarks[9].y;
+            
+            CONFIG.targetRotation.y = (x - 0.5) * Math.PI * 2;
+            CONFIG.targetRotation.x = (y - 0.5) * Math.PI;
 
-                // 2. Expansion (Wrist to Middle Tip)
-                const wrist = landmarks[0];
-                const tip = landmarks[12];
-                const distance = Math.sqrt(Math.pow(tip.x - wrist.x, 2) + Math.pow(tip.y - wrist.y, 2));
-                
-                // Tuned for typical hand distance from phone camera
-                const normOpen = Math.min(Math.max((distance - 0.15) * 3.5, 0), 1);
-                CONFIG.expansion = 0.5 + (normOpen * 2.0);
+            const wrist = landmarks[0];
+            const tip = landmarks[12];
+            const distance = Math.sqrt(Math.pow(tip.x - wrist.x, 2) + Math.pow(tip.y - wrist.y, 2));
+            const normOpen = Math.min(Math.max((distance - 0.2) * 4.0, 0), 1); 
+            CONFIG.expansion = 0.5 + (normOpen * 2.0);
 
-                // 3. Pinch (Thumb to Middle)
-                const thumb = landmarks[4];
-                const pinchDist = Math.sqrt(Math.pow(thumb.x - tip.x, 2) + Math.pow(thumb.y - tip.y, 2));
-                
-                if (pinchDist < 0.06 && Date.now() > CONFIG.pinchCooldown) {
+            const thumb = landmarks[4];
+            const middle = landmarks[12];
+            const pinchDist = Math.sqrt(Math.pow(thumb.x - middle.x, 2) + Math.pow(thumb.y - middle.y, 2));
+            
+            if (pinchDist < 0.05) {
+                if (Date.now() > CONFIG.pinchCooldown) {
                     cycleModel();
                     CONFIG.pinchCooldown = Date.now() + 1000;
-                    const s = document.getElementById('status');
-                    s.innerText = "✨ 切换模型";
-                    s.style.color = "#fff";
+                    const status = document.getElementById('status');
+                    status.innerText = "手势指令：切换模型";
+                    status.style.textShadow = "0 0 10px white";
+                    setTimeout(() => status.style.textShadow = "0 0 5px #00ffff", 200);
                 }
-
-            } else {
-                CONFIG.handDetected = false;
-                document.getElementById('status').innerText = "🔍 搜索手部信号...";
-                document.getElementById('status').style.color = "#00ffff";
-                CONFIG.expansion = 1.0;
             }
+        } else {
+            CONFIG.handDetected = false;
+            document.getElementById('status').innerText = "搜索手部中...";
+            document.getElementById('status').style.color = "#00ffff";
+            CONFIG.expansion = 1.0;
         }
+    }
 
-        function cycleModel() {
-            const keys = Object.keys(SHAPES);
-            const currentBtn = document.querySelector('.model-btn.active');
-            const currentType = currentBtn ? currentBtn.dataset.type : 'nebula';
-            const nextIdx = (keys.indexOf(currentType) + 1) % keys.length;
-            setShape(keys[nextIdx]);
+    const modelKeys = Object.keys(SHAPES);
+    function cycleModel() {
+        let currentBtn = document.querySelector('.model-btn.active');
+        let currentType = currentBtn ? currentBtn.dataset.type : 'nebula';
+        let idx = modelKeys.indexOf(currentType);
+        let nextIdx = (idx + 1) % modelKeys.length;
+        setShape(modelKeys[nextIdx]);
+    }
+
+    const hands = new Hands({locateFile: (file) => {
+        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+    }});
+    
+    hands.setOptions({
+        maxNumHands: 1,
+        modelComplexity: isMobile ? 0 : 1, // 手机端使用轻量模型
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+    });
+    
+    hands.onResults(onResults);
+
+    const cameraUtils = new Camera(videoElement, {
+        onFrame: async () => {
+            await hands.send({image: videoElement});
+        },
+        width: isMobile ? 320 : 640, // 降低手机端摄像头处理分辨率
+        height: isMobile ? 240 : 480
+    });
+    
+    cameraUtils.start()
+        .then(() => {
+            document.getElementById('loader').style.opacity = 0;
+            setTimeout(() => document.getElementById('loader').remove(), 500);
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('loader').innerHTML = "摄像头启动失败<br>请检查：<br>1. 必须使用HTTPS协议或Localhost<br>2. 允许浏览器摄像头权限";
+        });
+
+    initParticles(CONFIG.particleCount);
+
+    document.getElementById('color-picker').addEventListener('input', (e) => {
+        CONFIG.baseColor.set(e.target.value);
+    });
+
+    document.getElementById('density-slider').addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        document.getElementById('density-val').innerText = (val/1000).toFixed(0) + 'k';
+        CONFIG.particleCount = val;
+        initParticles(val);
+    });
+
+    document.querySelectorAll('.model-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            setShape(btn.dataset.type);
+        });
+    });
+
+    document.getElementById('fullscreen-btn').addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
         }
+    });
 
-        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-        
-        hands.setOptions({
-            maxNumHands: 1,
-            modelComplexity: 1, // 0 for max speed, 1 for balance
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
-        });
-        
-        hands.onResults(onResults);
+    // --- Animation Loop ---
+    const clock = new THREE.Clock();
 
-        // Lower camera resolution for mobile performance
-        const cameraUtils = new Camera(videoElement, {
-            onFrame: async () => await hands.send({image: videoElement}),
-            width: isMobile ? 320 : 640,
-            height: isMobile ? 240 : 480
-        });
-        
-        cameraUtils.start().catch(err => {
-            document.getElementById('loader').innerHTML = "<div style='padding:20px; text-align:center'>启动失败<br>请检查摄像头权限<br>或确保使用HTTPS/Localhost</div>";
-        });
+    function animate() {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta();
+        updateParticles(delta);
+        starField.rotation.y -= 0.02 * delta;
 
-        // --- Init & Events ---
-        initParticles(CONFIG.particleCount);
-
-        // UI Toggles
-        const controlsEl = document.getElementById('controls');
-        document.getElementById('toggle-controls').addEventListener('click', () => controlsEl.classList.add('visible'));
-        document.getElementById('close-controls').addEventListener('click', () => controlsEl.classList.remove('visible'));
-
-        document.getElementById('color-picker').addEventListener('input', (e) => CONFIG.baseColor.set(e.target.value));
-        
-        document.getElementById('density-slider').addEventListener('input', (e) => {
-            const val = parseInt(e.target.value);
-            document.getElementById('density-val').innerText = (val/1000).toFixed(0) + 'k';
-            CONFIG.particleCount = val;
-            initParticles(val);
-        });
-
-        document.querySelectorAll('.model-btn').forEach(btn => {
-            if(!btn.onclick) btn.addEventListener('click', () => setShape(btn.dataset.type));
-        });
-
-        document.getElementById('fullscreen-btn').addEventListener('click', () => {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-            else if (document.exitFullscreen) document.exitFullscreen();
-        });
-
-        // Resize Logic
-        window.addEventListener('resize', () => {
-            // Update camera aspect
-            camera.aspect = window.innerWidth / window.innerHeight;
-            // Adjust Z position for portrait/landscape switch
-            camera.position.z = window.innerWidth < window.innerHeight ? 40 : 30;
-            camera.updateProjectionMatrix();
-            
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            composer.setSize(window.innerWidth, window.innerHeight);
-            
-            // Recalculate bloom resolution
-            const newIsMobile = window.innerWidth < 768;
-            bloomPass.resolution.set(
-                window.innerWidth / (newIsMobile ? 2 : 1), 
-                window.innerHeight / (newIsMobile ? 2 : 1)
-            );
-        });
-
-        const clock = new THREE.Clock();
-        function animate() {
-            requestAnimationFrame(animate);
-            const delta = clock.getDelta();
-            updateParticles(delta);
-            starField.rotation.y -= 0.05 * delta;
+        // 关键逻辑：手机端不使用 Composer 渲染
+        if (isMobile) {
+            renderer.render(scene, camera);
+        } else {
             composer.render();
         }
-        animate();
+    };
+    
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        if(composer) composer.setSize(window.innerWidth, window.innerHeight);
+    });
 
-    </script>
+    animate();
+</script>
 </body>
 </html>
